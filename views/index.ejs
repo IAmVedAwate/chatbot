@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Chatbot Interface</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles/chatstyle.css">
+  <script defer src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+</head>
+<body>
+  <button class="chat-button" onclick="toggleChat()">Chat</button>
+  
+  <div class="chat-window" id="chatWindow" style="display: none;">
+    <div class="chat-header">Chatbot</div>
+    <div class="chat-body" id="chatBody">
+      <div class="message bot">Hello.. How Can I Help You?</div>
+    </div>
+    <input type="text" class="chat-input" placeholder="Type a message" id="userInput" autocomplete="off" autofocus />
+    <button type="button" class="send-button" onclick="submitForm()">Send</button>
+  </div>
+  <script>
+
+    function toggleChat() {
+      const chatWindow = document.getElementById('chatWindow');
+      chatWindow.style.display = chatWindow.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function fetchConversation() {
+        $.get('/database', function(data) {
+            const conversationList = data.conversations;
+            const conversationElem = $('#chatBody');
+            conversationElem.empty(); // Clear previous conversation
+
+            conversationList.forEach(item => {
+                conversationElem.append(
+                    `<div class="message user">${item.user_input}</div>
+                    <div class="message bot">${item.bot_response}</div>`
+                );
+            });
+        });
+    }
+
+    // Call the function to fetch conversation history on page load
+    fetchConversation();
+
+    function submitForm() {
+        var userInput = $('#userInput').val(); // Get user input
+        $.ajax({
+            type: 'POST', // Or 'GET' depending on your backend
+            url: '/', // Replace with your backend URL
+            data: { userInput: userInput },
+            success: function(response) {
+                $('#result').html('Data submitted successfully'); // Update the div with the result
+                fetchConversation();
+                document.getElementById('userInput').value = ''; // Update conversation history after submitting the form
+                // You can perform additional actions with the response here
+            },
+            error: function(err) {
+                $('#result').html('Error: ' + err); // Handle errors
+            }
+        });
+    }
+
+  </script>
+</body>
+</html>
